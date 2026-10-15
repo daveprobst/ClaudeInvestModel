@@ -26,7 +26,7 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: VITE_API_URL          # public URL of bulwark-api (same blueprint)
-        value: ""
+        value: https://bulwark-api-4r88.onrender.com
 
   - type: web
     runtime: node
