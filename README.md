@@ -6,6 +6,7 @@ curve, CAPE and the Buffett indicator — with **no fitted parameters** and **no
 
 * 🌐 Website: React dashboard with the live signal, interactive backtest, crash scorecard and the full robustness evidence (`web/`)
 * 🧮 Model: ~1,000 lines of Python (incl. tests), one frozen config, leak-audit tests (`model/`)
+* 💎 Premium `/region` page (demo: Switzerland) behind a Stripe-test-mode membership — see [`docs/PREMIUM.md`](docs/PREMIUM.md)
 * 🗃️ The earlier V1→V22 research is archived in [`legacy/`](legacy) with an [audit](docs/LEGACY_AUDIT.md) of why it was rebuilt
 
 ## The rules
@@ -60,7 +61,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m model.run --fetch    # re-download all public data first
 .venv/bin/python -m pytest model/tests   # leak audit
 
-cd web && npm ci && npm run dev          # website on http://localhost:5173
+cd server && npm ci && npm test && npm start   # premium API on :8787 (demo mode without keys)
+cd web && npm ci && npm run dev          # website on http://localhost:5173 (proxies /api)
 ```
 
 ## Layout
@@ -69,6 +71,7 @@ cd web && npm ci && npm run dev          # website on http://localhost:5173
 model/          fetch.py · data.py · signals.py · engine.py · metrics.py · analysis.py · run.py · tests/
 data/raw/       committed public data (Shiller, FRED) so results reproduce offline
 web/            Vite + React + TypeScript site (hand-built SVG charts)
+server/         Node API for the premium /region page (demo + Stripe test mode, gated data)
 docs/           LEGACY_AUDIT.md · RESEARCH_LOG.md
 legacy/         the original V1–V22 scripts and figures, untouched
 render.yaml     Render blueprint (static site, free)

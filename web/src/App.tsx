@@ -8,10 +8,15 @@ import { Crashes } from './components/Crashes'
 import { Upside } from './components/Upside'
 import { Evidence } from './components/Evidence'
 import { Method } from './components/Method'
+import { RegionPage } from './components/Region'
 
 export default function App() {
   const [theme, toggle] = useTheme()
-  const { data, error } = useData()
+  const isRegion = window.location.pathname.replace(/\/+$/, '') === '/region'
+  const { data, error } = useData(!isRegion)
+  if (isRegion) {
+    return (<><Nav theme={theme} toggle={toggle} region /><main id="top"><RegionPage /></main></>)
+  }
   return (
     <>
       <Nav theme={theme} toggle={toggle} />

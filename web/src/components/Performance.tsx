@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { Model, Series } from '../types'
+import { useMemo, useState, type ReactNode } from 'react'
+import type { PerfSeries } from '../types'
 import { TimeChart, type Band, type Line } from '../charts/TimeChart'
 import { drawdownSeries, windowStats } from '../stats'
 import { monthLabel, mult, num, pct } from '../format'
@@ -16,8 +16,13 @@ const META: Record<Key, { label: string; color: string; dash?: string; width: nu
   cash: { label: 'T-bills', color: 'var(--cash)', dash: '2 4', width: 1.8 },
 }
 
-export function Performance({ model, series }: { model: Model; series: Series }) {
-  const [startY, setStartY] = useState(1970)
+type PerfProps = {
+  model: { turnover_per_year: number; trades_per_year: number }; series: PerfSeries
+  id?: string; eyebrow?: string; title?: ReactNode; intro?: ReactNode; starts?: { y: number; label: string }[]; defaultStart?: number; source?: ReactNode
+}
+
+export function Performance({ model, series, id = 'performance', eyebrow = 'Performance', title, intro, starts = STARTS, defaultStart = 1970, source }: PerfProps) {
+  const [startY, setStartY] = useState(defaultStart)
   const [log, setLog] = useState(true)
   const [on, setOn] = useState<Record<Key, boolean>>({ bulwark: true, buyhold: true, faber: false, cash: false })
   const [hover, setHover] = useState<number | null>(null)
@@ -78,14 +83,14 @@ export function Performance({ model, series }: { model: Model; series: Series })
   }, [series, lo, hi])
 
   return (
-    <Section id="performance" eyebrow="Performance"
-      title={<>Same destination. <span className="grad">A far smoother road.</span></>}
-      intro="Drag across any chart — all three stay in sync. Pick a starting point to see how the story changes; the statistics below recompute for that window.">
+    <Section id={id} eyebrow={eyebrow}
+      title={title ?? <>Same destination. <span className="grad">A far smoother road.</span></>}
+      intro={intro ?? 'Drag across any chart — all three stay in sync. Pick a starting point to see how the story changes; the statistics below recompute for that window.'}>
       <Reveal>
         <div className="card chart-card">
           <div className="chart-head">
             <div className="seg" role="group" aria-label="Start year">
-              {STARTS.map((s) => <button key={s.y} aria-pressed={startY === s.y} onClick={() => setStartY(s.y)}>{s.label}</button>)}
+              {starts.map((s) => <button key={s.y} aria-pressed={startY === s.y} onClick={() => setStartY(s.y)}>{s.label}</button>)}
             </div>
             <div className="seg" role="group" aria-label="Scale">
               <button aria-pressed={log} onClick={() => setLog(true)}>Log</button>
@@ -138,7 +143,7 @@ export function Performance({ model, series }: { model: Model; series: Series })
         </div>
       </Reveal>
       <p className="sub" style={{ marginTop: 14, color: 'var(--ink-3)', fontSize: 13 }}>
-        Source: Shiller S&amp;P 500 total-return index (monthly averages), 3-month T-bills; {model.turnover_per_year.toFixed(2)}× annual turnover, about {model.trades_per_year.toFixed(1)} rebalances a year, 0.10 % cost per trade included. Past performance is hypothetical and not a guarantee.
+        {source ?? <>Source: Shiller S&amp;P 500 total-return index (monthly averages), 3-month T-bills; </>}{model.turnover_per_year.toFixed(2)}× annual turnover, about {model.trades_per_year.toFixed(1)} rebalances a year, 0.10 % cost per trade included. Past performance is hypothetical and not a guarantee.
       </p>
     </Section>
   )

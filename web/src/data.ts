@@ -3,10 +3,11 @@ import type { Model, Series } from './types'
 
 const base = import.meta.env.BASE_URL
 
-export function useData() {
+export function useData(enabled = true) {
   const [state, setState] = useState<{ model: Model; series: Series } | null>(null)
   const [error, setError] = useState<string | null>(null)
   useEffect(() => {
+    if (!enabled) return
     let alive = true
     Promise.all([
       fetch(`${base}data/model.json`).then((r) => r.json() as Promise<Model>),
@@ -15,6 +16,6 @@ export function useData() {
       .then(([model, series]) => alive && setState({ model, series }))
       .catch((e) => alive && setError(String(e)))
     return () => { alive = false }
-  }, [])
+  }, [enabled])
   return { data: state, error }
 }

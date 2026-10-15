@@ -2,17 +2,22 @@ import { Icon } from './ui'
 import { monthLabel } from '../format'
 import type { Model } from '../types'
 
-export function Nav({ theme, toggle }: { theme: 'dark' | 'light'; toggle: () => void }) {
+export function Nav({ theme, toggle, region = false }: { theme: 'dark' | 'light'; toggle: () => void; region?: boolean }) {
   return (
     <nav className="nav" aria-label="Primary">
       <div className="wrap nav-in">
-        <a className="brand" href="#top" aria-label="Bulwark home">
+        <a className="brand" href={region ? '/' : '#top'} aria-label="Bulwark home">
           <svg viewBox="0 0 64 64" aria-hidden><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--s1)" /><stop offset="1" stopColor="var(--s3)" /></linearGradient></defs><path d="M32 6 52 14v16c0 14-8.5 23-20 28C20.500 53 12 44 12 30V14z" fill="url(#lg)" /><path d="m23 32 6.500 6.500L42 24" fill="none" stroke="var(--bg)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           Bulwark
         </a>
         <div className="nav-links">
-          <a href="#signal">Signal</a><a href="#performance">Performance</a><a href="#crashes">Crashes</a><a href="#upside">Cost</a><a href="#evidence">Evidence</a><a href="#method">Method</a>
+          {region ? (
+            <><a href="/">← Free model</a><a href="#provenance">Provenance</a><a href="#rsignal">Signal</a><a href="#rperformance">Performance</a><a href="#rcrashes">Crashes</a><a href="#rreality">Reality check</a></>
+          ) : (
+            <><a href="#signal">Signal</a><a href="#performance">Performance</a><a href="#crashes">Crashes</a><a href="#upside">Cost</a><a href="#evidence">Evidence</a><a href="#method">Method</a></>
+          )}
         </div>
+        <a className={`nav-premium ${region ? 'on' : ''}`} href="/region" aria-current={region ? 'page' : undefined}>Your region <span className="badge">Premium</span></a>
         <button className="icon-btn" onClick={toggle} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title="Toggle theme">{theme === 'dark' ? Icon.sun : Icon.moon}</button>
       </div>
     </nav>

@@ -58,3 +58,26 @@ export type Series = {
   cape: (number | null)[]; buffett: (number | null)[]; cape_pct: (number | null)[]; buffett_pct: (number | null)[]
   price: (number | null)[]; sma: (number | null)[]; curve: (number | null)[]; credit: (number | null)[]; sahm: (number | null)[]
 }
+
+export type PerfSeries = Pick<Series, 'd' | 'bulwark' | 'buyhold' | 'cash' | 'faber' | 'w' | 'nf' | 'regime'>
+
+export type RegionInput = { label: string; source: string; origin: 'native' | 'substitute' | 'assumption' }
+export type RegionSnapshot = {
+  asof: string; next_month: string; weight: number; regime: 'cheap' | 'fair' | 'rich'; n_flags: number; step: number
+  flags: Record<'below_sma' | 'neg_mom' | 'curve_inv', boolean>
+  price: number; sma: number; price_vs_sma: number; trip_sma: number; trip_sma_distance: number
+  mom12: number; cash12: number; trip_mom_distance: number; curve: number; short_rate: number; long_yield: number
+  us_cape: number; us_cape_pct: number; us_buffett: number; us_buffett_pct: number; val_score: number
+}
+export type RegionPayload = {
+  id: string; name: string; currency: string; generated: string; first: string; dividend_yield: number
+  inputs: RegionInput[]; snapshot: RegionSnapshot
+  headline: Record<string, Period>
+  calendar: Model['calendar']; episodes: Episode[]; rolling10: Model['rolling10']
+  ablations: { name: string; full: Variant & { bh_cagr?: number } }[]
+  bootstrap: Model['bootstrap']
+  turnover_per_year: number; trades_per_year: number
+  series: PerfSeries & { price: (number | null)[]; sma: (number | null)[]; curve: (number | null)[]; us_cape: (number | null)[]; us_buffett: (number | null)[]; wt: (number | null)[]; flags: number[] }
+  access: { plan: 'demo' | 'premium'; demo: boolean }
+  audit: { passed: boolean | null; summary: string }
+}

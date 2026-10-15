@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { Model } from '../types'
+import { useMemo, useState, type ReactNode } from 'react'
+import type { Episode } from '../types'
 import { useInView } from '../hooks'
 import { monthLabel, pct } from '../format'
 import { Legend, Reveal, Section } from './ui'
@@ -10,8 +10,11 @@ const NAMES: Record<string, string> = {
   '2000-08': 'Dot-com bust', '2007-10': 'Global financial crisis', '2020-02': 'COVID crash', '2021-12': 'Inflation bear market',
 }
 
-export function Crashes({ model }: { model: Model }) {
+type CrashProps = { model: { episodes: Episode[] }; names?: Record<string, string>; callouts?: ReactNode; intro?: ReactNode; id?: string }
+
+export function Crashes({ model, names = NAMES, callouts, intro, id = 'crashes' }: CrashProps) {
   const [era, setEra] = useState<'modern' | 'all'>('modern')
+  const hasOld = model.episodes.some((e) => e.peak < '1970-01')
   const eps = useMemo(() => model.episodes.filter((e) => (era === 'all' ? true : e.peak >= '1970-01')).slice().reverse(), [model.episodes, era])
   const [ref, seen] = useInView<HTMLDivElement>()
   const scale = 0.55 // bar track = 55 % drawdown
@@ -20,9 +23,9 @@ export function Crashes({ model }: { model: Model }) {
   const win = eps.filter((e) => e.bulwark_full_cycle > e.buyhold_full_cycle).length
 
   return (
-    <Section id="crashes" eyebrow="Crash scorecard"
+    <Section id={id} eyebrow="Crash scorecard"
       title={<>Every major drawdown, <span className="grad">scored against buy &amp; hold.</span></>}
-      intro="Episodes are identified from the S&P 500 itself (any decline of 15 % or more), then every strategy is judged over exactly the same window — no cherry-picking, including the ones where Bulwark did badly.">
+      intro={intro ?? 'Episodes are identified from the S&P 500 itself (any decline of 15 % or more), then every strategy is judged over exactly the same window — no cherry-picking, including the ones where Bulwark did badly.'}>
       <Reveal>
         <div className="card" ref={ref}>
           <div className="chart-head">
@@ -31,10 +34,12 @@ export function Crashes({ model }: { model: Model }) {
               <div className="sub">Peak → trough, measured on each strategy’s own value</div>
             </div>
             <div style={{ display: 'grid', gap: 10, justifyItems: 'end' }}>
-              <div className="seg" role="group" aria-label="Era">
-                <button aria-pressed={era === 'modern'} onClick={() => setEra('modern')}>Since 1970</button>
-                <button aria-pressed={era === 'all'} onClick={() => setEra('all')}>Incl. 1940–69</button>
-              </div>
+              {hasOld && (
+                <div className="seg" role="group" aria-label="Era">
+                  <button aria-pressed={era === 'modern'} onClick={() => setEra('modern')}>Since 1970</button>
+                  <button aria-pressed={era === 'all'} onClick={() => setEra('all')}>Incl. 1940–69</button>
+                </div>
+              )}
               <Legend items={[{ label: 'Buy & hold', color: 'var(--s2)' }, { label: 'Bulwark', color: 'var(--s1)' }, { label: '10-month rule only', color: 'var(--s3)', dash: true }]} />
             </div>
           </div>
@@ -53,7 +58,7 @@ export function Crashes({ model }: { model: Model }) {
             ]
             return (
               <div className="crash" key={e.peak}>
-                <div className="when">{NAMES[e.peak] ?? 'Drawdown'}<small>{monthLabel(e.peak)} → {monthLabel(e.trough)}</small></div>
+                <div className="when">{names[e.peak] ?? 'Drawdown'}<small>{monthLabel(e.peak)} → {monthLabel(e.trough)}</small></div>
                 <div className="bars">
                   {rows.map((r) => (
                     <div className="hbar" key={r.k} title={`${r.k}: ${pct(r.v, 1)}`}>
@@ -71,10 +76,12 @@ export function Crashes({ model }: { model: Model }) {
           })}
         </div>
       </Reveal>
+      {callouts ?? (
       <div className="grid g2 mt">
         <div className="callout good"><b>Where it shines:</b> slow-motion bears — 1973–74, 2000–02, 2007–09 — where trend and the yield curve flip months before the lows. Bulwark’s deepest loss was under −20 % in each, versus −39 % to −49 % for buy &amp; hold.</div>
         <div className="callout"><b>Where it can’t:</b> crashes that start and end inside a month or two — 1987 and COVID-2020. A monthly rule can’t sidestep a 30-day cliff, and it re-enters after the rebound (2020: −3 % over the cycle vs +5 %). Nothing here predicts shocks; it limits how long a bear can hurt.</div>
       </div>
+      )}
     </Section>
   )
 }

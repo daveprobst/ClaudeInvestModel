@@ -1,5 +1,7 @@
-# Render Blueprint – static site (free). Deploys the React site in /web from this branch.
-# Data is pre-computed by the Python model and committed to web/public/data, so no Python runs on Render.
+# Render Blueprint.
+#  - bulwark      : free static site (the public, free model) built from /web
+#  - bulwark-api  : free Node web service for the premium /region features (demo access + Stripe TEST mode)
+# The model output for the public page is committed as JSON, so no Python runs on Render.
 services:
   - type: web
     runtime: static
@@ -9,6 +11,10 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     pullRequestPreviewsEnabled: false
+    routes:
+      - type: rewrite            # /region is a client-side route of the single-page app
+        source: /region
+        destination: /index.html
     headers:
       - path: /data/*
         name: Cache-Control
@@ -19,3 +25,39 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: VITE_API_URL          # public URL of bulwark-api (same blueprint)
+        value: ""
+
+  - type: web
+    runtime: node
+    name: bulwark-api
+    plan: free
+    branch: feature/bulwark-model-and-site
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: node src/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: SITE_URL              # exact origin of the static site (CORS + Stripe redirect URLs)
+        value: https://bulwark-o6jh.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEMO_ENABLED          # "true" = anyone can try the premium page without paying (demo)
+        value: "true"
+      - key: PRICE_AMOUNT          # demo price in the smallest currency unit (900 = CHF 9.00)
+        value: "900"
+      - key: PRICE_CURRENCY
+        value: chf
+      # Secrets: leave empty to run in demo-only mode, or paste TEST keys in the Render dashboard.
+      - key: STRIPE_SECRET_KEY     # sk_test_...  (live keys are refused unless ALLOW_LIVE=true)
+        sync: false
+      - key: STRIPE_PRICE_ID       # optional price_... ; otherwise an inline CHF price is used
+        sync: false
+      - key: RESEND_API_KEY        # optional: e-mail sign-in links for returning members
+        sync: false
+      - key: MAIL_FROM
+        sync: false
