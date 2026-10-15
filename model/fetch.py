@@ -32,6 +32,12 @@ FRED = {
     "NFCI": "Chicago Fed NFCI (weekly, 1971+) -- live context only, not used by the model",
     "SP500": "S&P 500 daily close (last ~10y) -- live context only",
 }
+# Switzerland region pack (premium demo)
+FRED_CH = {
+    "IR3TIB01CHM156N": "Swiss 3-month interbank rate (1999+) -- CHF cash & curve",
+    "IRSTCI01CHM156N": "Swiss call-money rate (1972-2024) -- CHF cash before 1999",
+    "IRLTLT01CHM156N": "Swiss 10-year government yield (1955+) -- curve",
+}
 # OECD share-price indices (monthly average, local currency, price only) -- international trend check
 OECD = {
     "SPASTT01USM661N": "United States",
@@ -80,7 +86,7 @@ def main() -> int:
     print("Shiller:")
     fetch_shiller()
     print("FRED:")
-    for s in list(FRED) + list(OECD):
+    for s in list(FRED) + list(OECD) + list(FRED_CH):
         fetch_fred(s)
     return 0
 

@@ -93,6 +93,15 @@ def main() -> None:
     cols = ["price", "sma", "below_sma", "neg_mom", "curve_inv", "credit_stress", "sahm", "cape", "cape_pct", "buffett", "buffett_pct",
             "regime", "n_flags", "w_target", "w_eff", "ret", "r_bh", "r_cash", "r_faber"]
     bt.loc["1940":, cols].to_csv(OUT / "monthly_paths.csv", float_format="%.6f")
+    # ---- premium region packs: written OUTSIDE web/public so the static site never ships them ----
+    from .regions import REGIONS, build_region_payload
+    reg_dir = ROOT / "server" / "private" / "regions"
+    reg_dir.mkdir(parents=True, exist_ok=True)
+    for rid, spec in REGIONS.items():
+        payload = build_region_payload(raw, sig, spec)
+        payload["audit"] = model["audit"]
+        (reg_dir / f"{rid}.json").write_text(json.dumps(payload, separators=(",", ":")))
+        print("region", rid, "->", reg_dir / f"{rid}.json")
     print("audit:", model["audit"])
     print("wrote", WEB_DATA / "model.json", "and series.json")
 

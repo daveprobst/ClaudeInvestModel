@@ -46,9 +46,9 @@ def static_mix(bt: pd.DataFrame, a: str, b: str | None) -> pd.Series:
 # --------------------------------------------------------------------------------------------------
 # headline tables
 # --------------------------------------------------------------------------------------------------
-def headline(bt: pd.DataFrame) -> dict:
+def headline(bt: pd.DataFrame, periods: dict | None = None) -> dict:
     out = {}
-    for key, (a, b, label) in PERIODS.items():
+    for key, (a, b, label) in (periods or PERIODS).items():
         d = bt.loc[a:b] if b else bt.loc[a:]
         rows = {}
         defs = {"bulwark": d["ret"], "buyhold": d["r_bh"], "cash": d["r_cash"], "faber": d["r_faber"],
