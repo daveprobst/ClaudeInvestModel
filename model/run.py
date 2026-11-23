@@ -59,6 +59,9 @@ def main() -> None:
         from . import fetch
         fetch.main()
 
+    from .rolling import build as build_rolling
+    build_rolling()
+
     raw = load_raw()
     sig = compute_signals(raw)
     bt = A.with_benchmarks(raw, backtest(raw, sig=sig))

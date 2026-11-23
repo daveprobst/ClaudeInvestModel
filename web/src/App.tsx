@@ -1,4 +1,6 @@
 import { useTheme } from './hooks'
+import { useState } from 'react'
+import { Rolling } from './components/Rolling'
 import { useData } from './data'
 import { Footer, Nav } from './components/Chrome'
 import { Hero } from './components/Hero'
@@ -12,6 +14,13 @@ import { RegionPage } from './components/Region'
 
 export default function App() {
   const [theme, toggle] = useTheme()
+  const [version, setVersion] = useState<'rolling' | 'monthly'>(() => new URLSearchParams(window.location.search).get('model') === 'monthly' ? 'monthly' : 'rolling')
+  const switchVersion = (v: 'rolling' | 'monthly') => {
+    setVersion(v)
+    const url = new URL(window.location.href)
+    url.searchParams.set('model', v)
+    window.history.replaceState(null, '', url)
+  }
   const isRegion = window.location.pathname.replace(/\/+$/, '') === '/region'
   const { data, error } = useData(!isRegion)
   if (isRegion) {
@@ -19,8 +28,10 @@ export default function App() {
   }
   return (
     <>
-      <Nav theme={theme} toggle={toggle} />
+      <Nav theme={theme} toggle={toggle} rolling={version === 'rolling'} />
       <main id="top">
+        <div className="wrap" style={{ paddingTop: 28 }}><div className="seg" role="group" aria-label="Model version"><button aria-pressed={version === 'rolling'} onClick={() => switchVersion('rolling')}>Rolling daily</button><button aria-pressed={version === 'monthly'} onClick={() => switchVersion('monthly')}>Original monthly</button></div></div>
+        {version === 'rolling' ? <Rolling /> : <>
         {error && <div className="skeleton">Could not load model data. {error}</div>}
         {!data && !error && <div className="skeleton">Loading model…</div>}
         {data && (
@@ -34,8 +45,9 @@ export default function App() {
             <Method model={data.model} />
           </>
         )}
+        </>}
       </main>
-      {data && <Footer model={data.model} />}
+      {version === 'monthly' && data && <Footer model={data.model} />}
     </>
   )
 }

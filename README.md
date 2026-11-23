@@ -1,5 +1,23 @@
 # Bulwark — a common-sense drawdown shield
 
+The default dashboard is **Rolling daily**, with an **Original monthly** switch
+(`?model=monthly`). Its independent backtest uses daily SPY prices and adjusted
+closes (dividends included), a 21-session rolling price average against a
+210-session trend, and 21-session smoothed total-return momentum shifted by
+252 trading sessions. It uses daily Treasury rates and the original model's
+completed-month valuation regime, available from the next calendar day.
+Signals execute at the following session's close and earn returns thereafter;
+allocation changes cost 0.10%. Cash accrues across calendar days. Source
+revisions remain a limitation; this is not a historical real-time vintage test.
+The daily history is about ten years, with 273 sessions of warm-up. It has its
+own metrics and chart and does not inherit the monthly results below.
+
+`python -m model.run --fetch` refreshes both versions. `python -m model.rolling`
+rebuilds only the rolling payload from saved inputs. The daily schedule runs
+Tuesday–Saturday at 06:17 UTC, after the preceding US session. Incomplete
+current-day quotes are excluded. The rolling dashboard checks for saved updates
+every 15 minutes and displays a warning when prices are over five days old.
+
 A transparent, rules-based model that tries to **avoid the deep drawdowns of U.S. equities without giving up the
 upside**, using only conventional, widely known indicators — 10-month moving average, 12-month momentum, the yield
 curve, CAPE and the Buffett indicator — with **no fitted parameters** and **no look-ahead**.
@@ -87,6 +105,6 @@ pushes, and Render redeploys automatically.
 The refresh workflow must also exist on the default branch (`main`): GitHub only
 schedules workflows from that branch. It explicitly checks out the deployed
 `feature/bulwark-model-and-site` branch, refreshes public and regional data,
-runs the model tests, and commits there. It runs at 06:17 UTC on weekdays so
+runs the model tests, and commits there. It runs at 06:17 UTC Tuesday–Saturday so
 late source releases are picked up without waiting another month. The model
 signal uses completed months; daily context retains its own observation dates.

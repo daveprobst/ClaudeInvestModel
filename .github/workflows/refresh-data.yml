@@ -4,7 +4,7 @@ name: Refresh data and model
 # website JSON. Render redeploys automatically when the branch changes.
 on:
   schedule:
-    - cron: "17 6 * * 1-5"   # Retry on weekdays as sources publish at different times.
+    - cron: "17 6 * * 2-6"   # Tue–Sat UTC: refresh after each completed US trading day.
   workflow_dispatch:
 
 permissions:
@@ -34,4 +34,4 @@ jobs:
           git config user.name "bulwark-bot"
           git config user.email "bulwark-bot@users.noreply.github.com"
           git add data web/public/data outputs server/private/regions
-          git diff --cached --quiet || (git commit -m "data: monthly refresh" && git push)
+          git diff --cached --quiet || (git commit -m "data: refresh monthly and rolling daily models" && git push)

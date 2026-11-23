@@ -15,6 +15,8 @@ import re
 import sys
 import time
 import urllib.request
+import subprocess
+import json
 from pathlib import Path
 
 RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
@@ -31,6 +33,8 @@ FRED = {
     "VIXCLS": "CBOE VIX (daily, 1990+) -- live context only, not used by the model",
     "NFCI": "Chicago Fed NFCI (weekly, 1971+) -- live context only, not used by the model",
     "SP500": "S&P 500 daily close (last ~10y) -- live context only",
+    "DGS10": "Daily 10-year Treasury yield -- rolling model curve",
+    "DTB3": "Daily 3-month Treasury bill rate -- rolling model cash and curve",
 }
 # Switzerland region pack (premium demo)
 FRED_CH = {
@@ -55,8 +59,11 @@ def _get(url: str, tries: int = 4) -> bytes:
     last = None
     for k in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r:
-                return r.read()
+            agent = ["-A", "Mozilla/5.0"] if "finance.yahoo.com/" in url else []
+            return subprocess.run(
+                ["curl", *agent, "-fsSL", "--connect-timeout", "15", "--max-time", "45", url],
+                capture_output=True, check=True,
+            ).stdout
         except Exception as e:  # noqa: BLE001
             last = e
             time.sleep(2 * (k + 1))
@@ -88,7 +95,17 @@ def main() -> int:
     print("FRED:")
     for s in list(FRED) + list(OECD) + list(FRED_CH):
         fetch_fred(s)
+    fetch_spy()
     return 0
+
+
+def fetch_spy() -> None:
+    # Yahoo's range=max silently returns monthly bars; use explicit daily 10-year coverage.
+    data = _get("https://query2.finance.yahoo.com/v8/finance/chart/SPY?range=10y&interval=1d")
+    result = json.loads(data)["chart"]["result"][0]
+    if len(result["timestamp"]) < 1000 or result["meta"]["dataGranularity"] != "1d":
+        raise ValueError("SPY feed did not return sufficient daily history")
+    (RAW / "SPY.json").write_bytes(data)
 
 
 if __name__ == "__main__":

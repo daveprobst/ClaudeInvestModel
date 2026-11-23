@@ -2,7 +2,7 @@ import { Icon } from './ui'
 import { monthLabel } from '../format'
 import type { Model } from '../types'
 
-export function Nav({ theme, toggle, region = false }: { theme: 'dark' | 'light'; toggle: () => void; region?: boolean }) {
+export function Nav({ theme, toggle, region = false, rolling = false }: { theme: 'dark' | 'light'; toggle: () => void; region?: boolean; rolling?: boolean }) {
   return (
     <nav className="nav" aria-label="Primary">
       <div className="wrap nav-in">
@@ -13,7 +13,7 @@ export function Nav({ theme, toggle, region = false }: { theme: 'dark' | 'light'
         <div className="nav-links">
           {region ? (
             <><a href="/">← Free model</a><a href="#provenance">Provenance</a><a href="#rsignal">Signal</a><a href="#rperformance">Performance</a><a href="#rcrashes">Crashes</a><a href="#rreality">Reality check</a></>
-          ) : (
+          ) : rolling ? <><a href="#signal">Signal</a><a href="#performance">Performance</a><a href="#method">Method &amp; sources</a></> : (
             <><a href="#signal">Signal</a><a href="#performance">Performance</a><a href="#crashes">Crashes</a><a href="#upside">Cost</a><a href="#evidence">Evidence</a><a href="#method">Method</a></>
           )}
         </div>
