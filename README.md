@@ -83,3 +83,10 @@ render.yaml     Render blueprint (static site, free)
 `render.yaml` defines a free Render **static site** built from `web/` (`npm ci && npm run build`, publish `dist`).
 Because the model output is committed as JSON, Render needs no Python. The monthly GitHub Action refreshes the data and
 pushes, and Render redeploys automatically.
+
+The refresh workflow must also exist on the default branch (`main`): GitHub only
+schedules workflows from that branch. It explicitly checks out the deployed
+`feature/bulwark-model-and-site` branch, refreshes public and regional data,
+runs the model tests, and commits there. It runs at 06:17 UTC on weekdays so
+late source releases are picked up without waiting another month. The model
+signal uses completed months; daily context retains its own observation dates.

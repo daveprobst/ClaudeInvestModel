@@ -16,8 +16,9 @@ import pandas as pd
 
 from . import analysis as A
 from .config import FLAG_LABELS, PARAMS
-from .data import ROOT, load_raw
+from .data import ROOT, load_raw, _fred
 from .engine import backtest
+from .fetch import OECD
 from .signals import FLAGS, compute_signals
 
 WEB_DATA = ROOT / "web" / "public" / "data"
@@ -43,7 +44,7 @@ def sources(raw) -> list[dict]:
         dict(name="Nominal GDP (FRED GDP)", used_for="Buffett indicator denominator", last=last(raw.gdp), url="https://fred.stlouisfed.org/series/GDP"),
         dict(name="Moody's Baa yield (FRED BAA)", used_for="Credit spread (shown, does not cut equity)", last=last(raw.baa), url="https://fred.stlouisfed.org/series/BAA"),
         dict(name="Unemployment rate (FRED UNRATE)", used_for="Sahm rule (shown, does not cut equity)", last=last(raw.unrate), url="https://fred.stlouisfed.org/series/UNRATE"),
-        dict(name="OECD share price indices via FRED (8 markets)", used_for="International out-of-sample trend check", last="2026-09", url="https://fred.stlouisfed.org/"),
+        dict(name="OECD share price indices via FRED (8 markets)", used_for="International out-of-sample trend check", last=min(last(_fred(s)) for s in OECD), url="https://fred.stlouisfed.org/"),
         dict(name="CBOE VIX, Chicago Fed NFCI, S&P 500 daily (FRED)", used_for="Live context only – not model inputs",
              last=str(raw.sp500_daily.index[-1].date()), url="https://fred.stlouisfed.org/series/VIXCLS"),
     ]

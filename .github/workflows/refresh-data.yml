@@ -4,26 +4,34 @@ name: Refresh data and model
 # website JSON. Render redeploys automatically when the branch changes.
 on:
   schedule:
-    - cron: "17 6 3 * *"   # 3rd of each month: the previous month is complete and FRED/Shiller have updated
+    - cron: "17 6 * * 1-5"   # Retry on weekdays as sources publish at different times.
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: bulwark-data-refresh
+  cancel-in-progress: false
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feature/bulwark-model-and-site
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
       - run: python -m model.run --fetch
+      - run: python -m pytest model/tests -q
       - name: Commit if changed
         run: |
           git config user.name "bulwark-bot"
           git config user.email "bulwark-bot@users.noreply.github.com"
-          git add data web/public/data outputs
+          git add data web/public/data outputs server/private/regions
           git diff --cached --quiet || (git commit -m "data: monthly refresh" && git push)
