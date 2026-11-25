@@ -1604,6 +1604,6 @@
  },
  "audit": {
   "passed": true,
-  "summary": "15 passed, 3 warnings in 12.08s"
+  "summary": "15 passed, 3 warnings in 5.57s"
  }
 }
